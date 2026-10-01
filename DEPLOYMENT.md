@@ -6,13 +6,26 @@ Ubuntu 24.04, shared with AtypWebsite and key3s), as a Docker container behind t
 | What | Where |
 |---|---|
 | Compose project | `/opt/meshkit/docker-compose.yml` (copy of this repo's), `.env` (secrets, mode 600) |
-| Image | `ghcr.io/phmatray/meshkit:latest`, built by `.github/workflows/docker.yml` on every push to `main` |
+| Image | `ghcr.io/atypical-consulting/meshkit:latest`, built by `.github/workflows/docker.yml` on every push to `main` |
 | Container | `meshkit`, bound to `127.0.0.1:5102` only (`MESHKIT_PORT=127.0.0.1:5102` in `.env`) |
 | Data | `/opt/meshkit/data` — SQLite (`meshkit.db`) + DataProtection keys; owned by uid 1001 |
 | Catalog | `/opt/meshkit/catalog/<slug>/` — filled by `POST /api/ingest`; owned by uid 1001 |
 | nginx | `/etc/nginx/sites-available/meshkit` (symlinked in `sites-enabled`), `client_max_body_size 2g`, `proxy_request_buffering off` |
 | TLS | Let's Encrypt via `certbot --nginx`, renewed by the `certbot.timer` already on the host |
 | Logs | `docker logs meshkit`, `/var/log/nginx/{access,error}.log` |
+
+> **One-time action after the 2026-10 transfer to the `Atypical-Consulting` org.** `docker.yml`
+> derives the image name from `github.repository_owner`, so `main` now publishes
+> `ghcr.io/atypical-consulting/meshkit`. The host's own `/opt/meshkit/docker-compose.yml` is a
+> *copy* of this file's sibling and still names `ghcr.io/phmatray/meshkit` — `docker compose pull`
+> there keeps succeeding against the stale, frozen tag, so the store does not break, it silently
+> stops receiving updates. Edit the image line on the server once:
+>
+> ```bash
+> ssh root@62.72.19.224 "cd /opt/meshkit \
+>   && sed -i 's|ghcr.io/phmatray/meshkit|ghcr.io/atypical-consulting/meshkit|' docker-compose.yml \
+>   && docker compose pull -q && docker compose up -d && sleep 8 && docker compose ps"
+> ```
 
 ## Routine operations
 
@@ -22,7 +35,7 @@ ssh root@62.72.19.224 'cd /opt/meshkit && docker compose pull -q && docker compo
 
 # Publish a pack: the "Generate pack" workflow with publish=true does it (secrets MESHKIT_INGEST_URL/TOKEN).
 # By hand, from a release asset:
-ssh root@62.72.19.224 "cd /tmp && curl -sSL -o p.zip https://github.com/phmatray/MeshKit/releases/download/pack%2F<slug>%2F<n>/<slug>.zip \
+ssh root@62.72.19.224 "cd /tmp && curl -sSL -o p.zip https://github.com/Atypical-Consulting/MeshKit/releases/download/pack%2F<slug>%2F<n>/<slug>.zip \
   && curl -s -w '\n%{http_code}\n' -H \"Authorization: Bearer \$(grep ^MESHKIT__INGEST__TOKEN= /opt/meshkit/.env | cut -d= -f2)\" -F 'file=@p.zip;type=application/zip' http://127.0.0.1:5102/api/ingest; rm -f p.zip"
 
 # Health
