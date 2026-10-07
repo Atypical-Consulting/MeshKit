@@ -9,7 +9,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <Authors>Philippe Matray</Authors>
     <Company>Atypical Consulting</Company>
-    <RepositoryUrl>https://github.com/phmatray/MeshKit</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Atypical-Consulting/MeshKit</RepositoryUrl>
   </PropertyGroup>
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <IsPackable>false</IsPackable>
