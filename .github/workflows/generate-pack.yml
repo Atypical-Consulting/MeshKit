@@ -1,10 +1,12 @@
 name: Generate pack
 
-# Turns packs/<slug>.yaml into a sellable pack through the Meshy API, publishes the result as a
-# GitHub Release asset (tag pack/<slug>/<run>), and optionally pushes it into a running store.
+# Turns a pack manifest from the private Atypical-Consulting/meshkit-packs repository into a
+# sellable pack through the Meshy API, publishes the result as a GitHub Release asset
+# (tag pack/<slug>/<run>), and optionally pushes it into a running store.
 #
 # Secrets:
 #   MESHY_API_KEY         required — https://www.meshy.ai/settings/api
+#   MESHKIT_PACKS_TOKEN   required — fine-grained PAT, Contents: read on Atypical-Consulting/meshkit-packs
 #   MESHKIT_INGEST_URL    optional — https://<store>/api/ingest   (only used when `publish` is true)
 #   MESHKIT_INGEST_TOKEN  optional — the store's MeshKit__Ingest__Token
 #
@@ -53,9 +55,21 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The manifests are the product recipe (prompts, polycount, LOD ladder, price) and live in a
+      # private repository. MESHKIT_PACKS_TOKEN only grants Contents: read on that one repo.
+      - name: Check out the pack manifests
+        uses: actions/checkout@v7
+        with:
+          repository: Atypical-Consulting/meshkit-packs
+          token: ${{ secrets.MESHKIT_PACKS_TOKEN }}
+          path: .packs-src
+
+      - name: Stage the pack manifests
+        run: cp -r .packs-src/packs packs
+
       - name: Check the pack definition exists
         run: |
-          test -f "packs/${PACK}.yaml" || { echo "::error::packs/${PACK}.yaml not found"; exit 1; }
+          test -f "packs/${PACK}.yaml" || { echo "::error::packs/${PACK}.yaml not found — is it committed to Atypical-Consulting/meshkit-packs, and does MESHKIT_PACKS_TOKEN still have Contents: read on it?"; exit 1; }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6

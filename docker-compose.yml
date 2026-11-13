@@ -10,7 +10,7 @@
 
 services:
   web:
-    image: ghcr.io/phmatray/meshkit:${MESHKIT_TAG:-latest}
+    image: ghcr.io/atypical-consulting/meshkit:${MESHKIT_TAG:-latest}
     build: .
     container_name: meshkit
     restart: unless-stopped

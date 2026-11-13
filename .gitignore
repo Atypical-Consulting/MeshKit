@@ -8,6 +8,10 @@ node_modules/
 src/MeshKit.Web/wwwroot/css/app.css
 src/MeshKit.Web/wwwroot/js/model-viewer*.js
 /catalog/
+# The pack manifests live in the private Atypical-Consulting/meshkit-packs repository.
+# A local clone or the workflow's checkout lands here; it must never be committed back.
+/packs/
+.packs-src/
 /dist/
 /data/
 .env
